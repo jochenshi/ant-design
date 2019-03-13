@@ -14,9 +14,11 @@ title:
 Use `setFieldsValue` to set other control's value programmaticly.
 
 ````jsx
-import { Form, Select, Input, Button } from 'antd';
-const FormItem = Form.Item;
-const Option = Select.Option;
+import {
+  Form, Select, Input, Button,
+} from 'antd';
+
+const { Option } = Select;
 
 class App extends React.Component {
   handleSubmit = (e) => {
@@ -27,55 +29,55 @@ class App extends React.Component {
       }
     });
   }
+
   handleSelectChange = (value) => {
     console.log(value);
     this.props.form.setFieldsValue({
       note: `Hi, ${value === 'male' ? 'man' : 'lady'}!`,
     });
   }
+
   render() {
     const { getFieldDecorator } = this.props.form;
     return (
-      <Form onSubmit={this.handleSubmit}>
-        <FormItem
+      <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onSubmit={this.handleSubmit}>
+        <Form.Item
           label="Note"
-          labelCol={{ span: 4 }}
-          wrapperCol={{ span: 8 }}
         >
           {getFieldDecorator('note', {
             rules: [{ required: true, message: 'Please input your note!' }],
           })(
             <Input />
           )}
-        </FormItem>
-        <FormItem
+        </Form.Item>
+        <Form.Item
           label="Gender"
-          labelCol={{ span: 4 }}
-          wrapperCol={{ span: 8 }}
         >
           {getFieldDecorator('gender', {
             rules: [{ required: true, message: 'Please select your gender!' }],
-            onChange: this.handleSelectChange,
           })(
-            <Select placeholder="Select a option and change input text above">
+            <Select
+              placeholder="Select a option and change input text above"
+              onChange={this.handleSelectChange}
+            >
               <Option value="male">male</Option>
               <Option value="female">female</Option>
             </Select>
           )}
-        </FormItem>
-        <FormItem
-          wrapperCol={{ span: 8, offset: 4 }}
+        </Form.Item>
+        <Form.Item
+          wrapperCol={{ span: 12, offset: 5 }}
         >
           <Button type="primary" htmlType="submit">
             Submit
           </Button>
-        </FormItem>
+        </Form.Item>
       </Form>
     );
   }
 }
 
-const WrappedApp = Form.create()(App);
+const WrappedApp = Form.create({ name: 'coordinated' })(App);
 
 ReactDOM.render(<WrappedApp />, mountNode);
 ````

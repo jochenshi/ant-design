@@ -7,18 +7,14 @@ title:
 
 ## zh-CN
 
-仪表盘。
+通过设置 `type=dashboard`，可以很方便地实现仪表盘样式的进度条。
 
 ## en-US
 
-A dashboard.
+By setting `type=dashboard`, you can get a dashboard style of progress easily.
 
 ````jsx
 import { Progress } from 'antd';
 
-ReactDOM.render(
-  <div>
-    <Progress type="dashboard" percent={75} />
-  </div>
-, mountNode);
+ReactDOM.render(<Progress type="dashboard" percent={75} />, mountNode);
 ````

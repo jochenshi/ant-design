@@ -23,7 +23,7 @@ class Complete extends React.Component {
     result: [],
   }
 
-  handleChange = (value) => {
+  handleSearch = (value) => {
     let result;
     if (!value || value.indexOf('@') >= 0) {
       result = [];
@@ -35,13 +35,11 @@ class Complete extends React.Component {
 
   render() {
     const { result } = this.state;
-    const children = result.map((email) => {
-      return <Option key={email}>{email}</Option>;
-    });
+    const children = result.map(email => <Option key={email}>{email}</Option>);
     return (
       <AutoComplete
         style={{ width: 200 }}
-        onChange={this.handleChange}
+        onSearch={this.handleSearch}
         placeholder="input here"
       >
         {children}

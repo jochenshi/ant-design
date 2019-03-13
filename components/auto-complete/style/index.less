@@ -1,60 +1,82 @@
-@import "../../style/themes/default";
-@import "../../style/mixins/index";
-@import "../../input/style/mixin";
+@import '../../style/themes/default';
+@import '../../style/mixins/index';
+@import '../../input/style/mixin';
 
-@input-prefix-cls: ~"@{ant-prefix}-input";
-@select-prefix-cls: ~"@{ant-prefix}-select";
-@autocomplete-prefix-cls: ~"@{select-prefix-cls}-auto-complete";
+@input-prefix-cls: ~'@{ant-prefix}-input';
+@select-prefix-cls: ~'@{ant-prefix}-select';
+@autocomplete-prefix-cls: ~'@{select-prefix-cls}-auto-complete';
 
 .@{autocomplete-prefix-cls} {
+  .reset-component;
+
   &.@{select-prefix-cls} {
     .@{select-prefix-cls} {
       &-selection {
         border: 0;
         box-shadow: none;
-        &--single {
-          height: 100%;
-        }
         &__rendered {
-          margin-left: 0;
+          height: 100%;
           margin-right: 0;
+          margin-left: 0;
+          line-height: @input-height-base;
         }
         &__placeholder {
-          margin-left: 8px;
-          margin-right: 8px;
-          top: @input-height-base / 2;
+          margin-right: (@input-padding-horizontal-base + 1px);
+          margin-left: (@input-padding-horizontal-base + 1px);
         }
+
+        &--single {
+          height: auto;
+        }
+      }
+    }
+
+    // Fix https://github.com/ant-design/ant-design/issues/7800
+    .@{select-prefix-cls}-search--inline {
+      position: static;
+      float: left;
+    }
+
+    &-allow-clear {
+      .@{select-prefix-cls}-selection:hover .@{select-prefix-cls}-selection__rendered {
+        margin-right: 0 !important;
       }
     }
 
     .@{input-prefix-cls} {
-      .input();
+      height: @input-height-base;
+      line-height: @line-height-base;
       background: transparent;
+      border-width: @border-width-base;
+      &:focus,
+      &:hover {
+        .hover;
+      }
+      &[disabled] {
+        .disabled;
+        background-color: transparent;
+      }
     }
 
     &-lg {
-      .@{select-prefix-cls}-selection__placeholder {
-        top: @input-height-lg / 2;
+      .@{select-prefix-cls}-selection__rendered {
+        line-height: @input-height-lg;
       }
       .@{input-prefix-cls} {
-        .input-lg();
+        height: @input-height-lg;
+        padding-top: @input-padding-vertical-lg;
+        padding-bottom: @input-padding-vertical-lg;
       }
     }
 
     &-sm {
-      .@{select-prefix-cls}-selection__placeholder {
-        top: @input-height-sm / 2;
+      .@{select-prefix-cls}-selection__rendered {
+        line-height: @input-height-sm;
       }
       .@{input-prefix-cls} {
-        .input-sm();
-      }
-    }
-
-    .@{input-prefix-cls} {
-      border: @border-width-base @border-style-base @border-color-base;
-      &:focus,
-      &:hover {
-        .hover;
+        height: @input-height-sm;
+        padding-top: @input-padding-vertical-sm;
+        padding-bottom: @input-padding-vertical-sm;
       }
     }
   }

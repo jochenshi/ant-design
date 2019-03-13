@@ -1,20 +1,32 @@
-import React from 'react';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
 import { cloneElement } from 'react';
-import warning from '../_util/warning';
-import BreadcrumbItem from './BreadcrumbItem';
 import classNames from 'classnames';
+import BreadcrumbItem from './BreadcrumbItem';
+import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
+import warning from '../_util/warning';
+
+export interface Route {
+  path: string;
+  breadcrumbName: string;
+}
 
 export interface BreadcrumbProps {
   prefixCls?: string;
-  routes?: Array<any>;
-  params?: Object;
+  routes?: Route[];
+  params?: any;
   separator?: React.ReactNode;
-  itemRender?: (route: any, params: any, routes: Array<any>, paths: Array<string>) => React.ReactNode;
+  itemRender?: (
+    route: any,
+    params: any,
+    routes: Array<any>,
+    paths: Array<string>,
+  ) => React.ReactNode;
   style?: React.CSSProperties;
   className?: string;
-};
+}
 
-function getBreadcrumbName(route, params) {
+function getBreadcrumbName(route: Route, params: any) {
   if (!route.breadcrumbName) {
     return null;
   }
@@ -26,49 +38,54 @@ function getBreadcrumbName(route, params) {
   return name;
 }
 
-function defaultItemRender(route, params, routes, paths) {
+function defaultItemRender(route: Route, params: any, routes: Route[], paths: string[]) {
   const isLastItem = routes.indexOf(route) === routes.length - 1;
   const name = getBreadcrumbName(route, params);
-  return isLastItem
-    ? <span>{name}</span>
-    : <a href={`#/${paths.join('/')}`}>{name}</a>;
+  return isLastItem ? <span>{name}</span> : <a href={`#/${paths.join('/')}`}>{name}</a>;
 }
 
 export default class Breadcrumb extends React.Component<BreadcrumbProps, any> {
-  static Item: any;
+  static Item: typeof BreadcrumbItem;
 
   static defaultProps = {
-    prefixCls: 'ant-breadcrumb',
     separator: '/',
   };
 
   static propTypes = {
-    prefixCls: React.PropTypes.string,
-    separator: React.PropTypes.node,
-    routes: React.PropTypes.array,
-    params: React.PropTypes.object,
-    linkRender: React.PropTypes.func,
-    nameRender: React.PropTypes.func,
+    prefixCls: PropTypes.string,
+    separator: PropTypes.node,
+    routes: PropTypes.array,
+    params: PropTypes.object,
+    linkRender: PropTypes.func,
+    nameRender: PropTypes.func,
   };
 
   componentDidMount() {
     const props = this.props;
     warning(
       !('linkRender' in props || 'nameRender' in props),
+      'Breadcrumb',
       '`linkRender` and `nameRender` are removed, please use `itemRender` instead, ' +
-      'see: http://u.ant.design/item-render.',
+        'see: https://u.ant.design/item-render.',
     );
   }
 
-  render() {
+  renderBreadcrumb = ({ getPrefixCls }: ConfigConsumerProps) => {
     let crumbs;
     const {
-      separator, prefixCls, style, className, routes, params = {},
-      children, itemRender = defaultItemRender,
+      prefixCls: customizePrefixCls,
+      separator,
+      style,
+      className,
+      routes,
+      params = {},
+      children,
+      itemRender = defaultItemRender,
     } = this.props;
+    const prefixCls = getPrefixCls('breadcrumb', customizePrefixCls);
     if (routes && routes.length > 0) {
       const paths: string[] = [];
-      crumbs = routes.map((route) => {
+      crumbs = routes.map(route => {
         route.path = route.path || '';
         let path: string = route.path.replace(/^\//, '');
         Object.keys(params).forEach(key => {
@@ -90,7 +107,8 @@ export default class Breadcrumb extends React.Component<BreadcrumbProps, any> {
         }
         warning(
           element.type && element.type.__ANT_BREADCRUMB_ITEM,
-          'Breadcrumb only accepts Breadcrumb.Item as it\'s children',
+          'Breadcrumb',
+          "Only accepts Breadcrumb.Item as it's children",
         );
         return cloneElement(element, {
           separator,
@@ -103,5 +121,9 @@ export default class Breadcrumb extends React.Component<BreadcrumbProps, any> {
         {crumbs}
       </div>
     );
+  };
+
+  render() {
+    return <ConfigConsumer>{this.renderBreadcrumb}</ConfigConsumer>;
   }
 }

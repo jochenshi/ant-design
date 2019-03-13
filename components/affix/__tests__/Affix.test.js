@@ -3,66 +3,128 @@ import { mount } from 'enzyme';
 import Affix from '..';
 import Button from '../../button';
 
-jest.useFakeTimers();
-
 const events = {};
 
 class AffixMounter extends React.Component {
   componentDidMount() {
-    this.container.scrollTop = 100;
     this.container.addEventListener = jest.fn().mockImplementation((event, cb) => {
       events[event] = cb;
     });
   }
-  getTarget = () => {
-    return this.container;
-  }
+
+  getTarget = () => this.container;
+
   render() {
-    return (<div
-      style={{
-        height: 100,
-        overflowY: 'scroll',
-      }}
-      ref={(node) => { this.container = node; }}
-    >
+    return (
       <div
-        className="background"
-        style={{
-          paddingTop: 60,
-          height: 300,
+        ref={node => {
+          this.container = node;
         }}
+        className="container"
       >
         <Affix
-          target={() => this.container}
-          ref={ele => this.affix = ele}
+          className="fixed"
+          target={this.getTarget}
+          ref={ele => {
+            this.affix = ele;
+          }}
+          {...this.props}
         >
-          <Button type="primary" >
-            Fixed at the top of container
-          </Button>
+          <Button type="primary">Fixed at the top of container</Button>
         </Affix>
       </div>
-    </div>);
+    );
   }
 }
 
 describe('Affix Render', () => {
-  it('Anchor render perfectly', () => {
-    document.body.innerHTML = '<div id="mounter" />';
+  let wrapper;
 
-    const wrapper = mount(<AffixMounter />, { attachTo: document.getElementById('mounter') });
-    jest.runAllTimers();
+  const classRect = {
+    container: {
+      top: 0,
+      bottom: 100,
+    },
+  };
 
-    wrapper.node.affix.refs.fixedNode.parentNode.getBoundingClientRect = jest.fn(() => {
-      return {
-        bottom: 100, height: 28, left: 0, right: 0, top: -50, width: 195,
-      };
-    });
+  const originGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+  HTMLElement.prototype.getBoundingClientRect = function() {
+    return (
+      classRect[this.className] || {
+        top: 0,
+        bottom: 0,
+      }
+    );
+  };
 
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+    HTMLElement.prototype.getBoundingClientRect = originGetBoundingClientRect;
+  });
+  const movePlaceholder = top => {
+    classRect.fixed = {
+      top,
+      bottom: top,
+    };
     events.scroll({
       type: 'scroll',
     });
+    jest.runAllTimers();
+  };
+
+  it('Anchor render perfectly', () => {
+    document.body.innerHTML = '<div id="mounter" />';
+
+    wrapper = mount(<AffixMounter />, { attachTo: document.getElementById('mounter') });
+    jest.runAllTimers();
+
+    movePlaceholder(0);
+    expect(wrapper.instance().affix.state.affixStyle).toBeFalsy();
+
+    movePlaceholder(-100);
+    expect(wrapper.instance().affix.state.affixStyle).toBeTruthy();
+
+    movePlaceholder(0);
+    expect(wrapper.instance().affix.state.affixStyle).toBeFalsy();
+  });
+
+  it('support offsetBottom', () => {
+    document.body.innerHTML = '<div id="mounter" />';
+
+    wrapper = mount(<AffixMounter offsetBottom={0} />, {
+      attachTo: document.getElementById('mounter'),
+    });
 
     jest.runAllTimers();
-    expect(wrapper.node.affix.state.affixStyle).not.toBe(null);
+
+    movePlaceholder(300);
+    expect(wrapper.instance().affix.state.affixStyle).toBeTruthy();
+
+    movePlaceholder(0);
+    expect(wrapper.instance().affix.state.affixStyle).toBeFalsy();
+
+    movePlaceholder(300);
+    expect(wrapper.instance().affix.state.affixStyle).toBeTruthy();
+  });
+
+  it('updatePosition when offsetTop changed', () => {
+    document.body.innerHTML = '<div id="mounter" />';
+
+    wrapper = mount(<AffixMounter offsetTop={0} />, {
+      attachTo: document.getElementById('mounter'),
+    });
+    jest.runAllTimers();
+
+    movePlaceholder(-100);
+    expect(wrapper.instance().affix.state.affixStyle.top).toBe(0);
+    wrapper.setProps({
+      offsetTop: 10,
+    });
+    jest.runAllTimers();
+    expect(wrapper.instance().affix.state.affixStyle.top).toBe(10);
   });
 });

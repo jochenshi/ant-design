@@ -1,12 +1,32 @@
-import React from 'react';
-import { PropTypes } from 'react';
+import * as React from 'react';
 import TimePickerPanel from 'rc-time-picker/lib/Panel';
 import classNames from 'classnames';
-import warning from '../_util/warning';
-import { getComponentLocale } from '../_util/getLocale';
-declare const require: Function;
+import enUS from './locale/en_US';
+import LocaleReceiver from '../locale-provider/LocaleReceiver';
+import { generateShowHourMinuteSecond } from '../time-picker';
+import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
 
-function getColumns({ showHour, showMinute, showSecond }) {
+type PickerType = 'date' | 'week' | 'month';
+
+interface PickerMap {
+  [name: string]: string;
+}
+
+const DEFAULT_FORMAT: PickerMap = {
+  date: 'YYYY-MM-DD',
+  dateTime: 'YYYY-MM-DD HH:mm:ss',
+  week: 'gggg-wo',
+  month: 'YYYY-MM',
+};
+
+const LOCALE_FORMAT_MAPPING: PickerMap = {
+  date: 'dateFormat',
+  dateTime: 'dateTimeFormat',
+  week: 'weekFormat',
+  month: 'monthFormat',
+};
+
+function getColumns({ showHour, showMinute, showSecond, use12Hours }: any) {
   let column = 0;
   if (showHour) {
     column += 1;
@@ -17,101 +37,167 @@ function getColumns({ showHour, showMinute, showSecond }) {
   if (showSecond) {
     column += 1;
   }
+  if (use12Hours) {
+    column += 1;
+  }
   return column;
 }
 
-export default function wrapPicker(Picker, defaultFormat?) {
-  const PickerWrapper = React.createClass({
-    contextTypes: {
-      antLocale: PropTypes.object,
-    },
+export default function wrapPicker(Picker: React.ComponentClass<any>, pickerType: PickerType): any {
+  return class PickerWrapper extends React.Component<any, any> {
+    static defaultProps = {
+      transitionName: 'slide-up',
+      popupStyle: {},
+      onChange() {},
+      onOk() {},
+      onOpenChange() {},
+      locale: {},
+    };
 
-    getDefaultProps() {
-      return {
-        format: defaultFormat || 'YYYY-MM-DD',
-        transitionName: 'slide-up',
-        popupStyle: {},
-        onChange() {
-        },
-        onOk() {
-        },
-        onOpenChange() {
-        },
-        locale: {},
-        align: {
-          offset: [0, -9],
-        },
-        prefixCls: 'ant-calendar',
-        inputPrefixCls: 'ant-input',
-      };
-    },
+    private picker: any;
 
-    handleOpenChange(open) {
-      const { onOpenChange, toggleOpen } = this.props;
-      onOpenChange(open);
-
-      if (toggleOpen) {
-        warning(
-          false,
-          '`toggleOpen` is deprecated and will be removed in the future, ' +
-          'please use `onOpenChange` instead, see: http://u.ant.design/date-picker-on-open-change',
-        );
-        toggleOpen({ open });
+    componentDidMount() {
+      const { autoFocus, disabled } = this.props;
+      if (autoFocus && !disabled) {
+        this.focus();
       }
-    },
+    }
 
-    render() {
-      const props = this.props;
-      const { prefixCls, inputPrefixCls } = props;
-      const pickerClass = classNames({
-        [`${prefixCls}-picker`]: true,
-      });
-      const pickerInputClass = classNames({
-        [`${prefixCls}-picker-input`]: true,
-        [inputPrefixCls]: true,
-        [`${inputPrefixCls}-lg`]: props.size === 'large',
-        [`${inputPrefixCls}-sm`]: props.size === 'small',
-      });
+    handleOpenChange = (open: boolean) => {
+      const { onOpenChange } = this.props;
+      onOpenChange(open);
+    };
 
-      const locale = getComponentLocale(
-        props, this.context, 'DatePicker',
-        () => require('./locale/zh_CN'),
-      );
+    handleFocus: React.FocusEventHandler<HTMLInputElement> = e => {
+      const { onFocus } = this.props;
+      if (onFocus) {
+        onFocus(e);
+      }
+    };
 
-      const timeFormat = (props.showTime && props.showTime.format) || 'HH:mm:ss';
-      const rcTimePickerProps = {
-        format: timeFormat,
-        showSecond: timeFormat.indexOf('ss') >= 0,
-        showMinute: timeFormat.indexOf('mm') >= 0,
-        showHour: timeFormat.indexOf('HH') >= 0,
+    handleBlur: React.FocusEventHandler<HTMLInputElement> = e => {
+      const { onBlur } = this.props;
+      if (onBlur) {
+        onBlur(e);
+      }
+    };
+
+    handleMouseEnter: React.MouseEventHandler<HTMLInputElement> = e => {
+      const { onMouseEnter } = this.props;
+      if (onMouseEnter) {
+        onMouseEnter(e);
+      }
+    };
+
+    handleMouseLeave: React.MouseEventHandler<HTMLInputElement> = e => {
+      const { onMouseLeave } = this.props;
+      if (onMouseLeave) {
+        onMouseLeave(e);
+      }
+    };
+
+    focus() {
+      this.picker.focus();
+    }
+
+    blur() {
+      this.picker.blur();
+    }
+
+    savePicker = (node: any) => {
+      this.picker = node;
+    };
+
+    getDefaultLocale = () => {
+      const result = {
+        ...enUS,
+        ...this.props.locale,
       };
-      const columns = getColumns(rcTimePickerProps);
-      const timePickerCls = classNames({
-        [`${prefixCls}-time-picker-1-column`]: columns === 1,
-        [`${prefixCls}-time-picker-2-columns`]: columns === 2,
-      });
-      const timePicker = props.showTime ? (
-        <TimePickerPanel
-          {...rcTimePickerProps}
-          {...props.showTime}
-          prefixCls={`${prefixCls}-time-picker`}
-          className={timePickerCls}
-          placeholder={locale.timePickerLocale.placeholder}
-          transitionName="slide-up"
-        />
-      ) : null;
+      result.lang = {
+        ...result.lang,
+        ...(this.props.locale || {}).lang,
+      };
+      return result;
+    };
+
+    renderPicker = (locale: any, localeCode: string) => {
+      const { format, showTime } = this.props;
+      const mergedPickerType = showTime ? `${pickerType}Time` : pickerType;
+      const mergedFormat =
+        format ||
+        locale[LOCALE_FORMAT_MAPPING[mergedPickerType]] ||
+        DEFAULT_FORMAT[mergedPickerType];
 
       return (
-        <Picker
-          {...props}
-          pickerClass={pickerClass}
-          pickerInputClass={pickerInputClass}
-          locale={locale}
-          timePicker={timePicker}
-          onOpenChange={this.handleOpenChange}
-        />
+        <ConfigConsumer>
+          {({ getPrefixCls, getPopupContainer: getContextPopupContainer }: ConfigConsumerProps) => {
+            const {
+              prefixCls: customizePrefixCls,
+              inputPrefixCls: customizeInputPrefixCls,
+              getCalendarContainer,
+              size,
+              disabled,
+            } = this.props;
+            const getPopupContainer = getCalendarContainer || getContextPopupContainer;
+            const prefixCls = getPrefixCls('calendar', customizePrefixCls);
+            const inputPrefixCls = getPrefixCls('input', customizeInputPrefixCls);
+            const pickerClass = classNames(`${prefixCls}-picker`, {
+              [`${prefixCls}-picker-${size}`]: !!size,
+            });
+            const pickerInputClass = classNames(`${prefixCls}-picker-input`, inputPrefixCls, {
+              [`${inputPrefixCls}-lg`]: size === 'large',
+              [`${inputPrefixCls}-sm`]: size === 'small',
+              [`${inputPrefixCls}-disabled`]: disabled,
+            });
+
+            const timeFormat = (showTime && showTime.format) || 'HH:mm:ss';
+            const rcTimePickerProps = {
+              ...generateShowHourMinuteSecond(timeFormat),
+              format: timeFormat,
+              use12Hours: showTime && showTime.use12Hours,
+            };
+            const columns = getColumns(rcTimePickerProps);
+            const timePickerCls = `${prefixCls}-time-picker-column-${columns}`;
+            const timePicker = showTime ? (
+              <TimePickerPanel
+                {...rcTimePickerProps}
+                {...showTime}
+                prefixCls={`${prefixCls}-time-picker`}
+                className={timePickerCls}
+                placeholder={locale.timePickerLocale.placeholder}
+                transitionName="slide-up"
+              />
+            ) : null;
+
+            return (
+              <Picker
+                {...this.props}
+                getCalendarContainer={getPopupContainer}
+                format={mergedFormat}
+                ref={this.savePicker}
+                pickerClass={pickerClass}
+                pickerInputClass={pickerInputClass}
+                locale={locale}
+                localeCode={localeCode}
+                timePicker={timePicker}
+                onOpenChange={this.handleOpenChange}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+                onMouseEnter={this.handleMouseEnter}
+                onMouseLeave={this.handleMouseLeave}
+              />
+            );
+          }}
+        </ConfigConsumer>
       );
-    },
-  });
-  return PickerWrapper;
+    };
+
+    render() {
+      return (
+        <LocaleReceiver componentName="DatePicker" defaultLocale={this.getDefaultLocale}>
+          {this.renderPicker}
+        </LocaleReceiver>
+      );
+    }
+  };
 }

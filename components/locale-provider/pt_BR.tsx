@@ -1,7 +1,3 @@
-import moment from 'moment';
-import 'moment/locale/pt-br';
-moment.locale('pt-br');
-
 import Pagination from 'rc-pagination/lib/locale/pt_BR';
 import DatePicker from '../date-picker/locale/pt_BR';
 import TimePicker from '../time-picker/locale/pt_BR';
@@ -17,7 +13,8 @@ export default {
     filterTitle: 'Filtro',
     filterConfirm: 'OK',
     filterReset: 'Resetar',
-    emptyText: 'Não há dados',
+    selectAll: 'Selecionar página atual',
+    selectInvert: 'Inverter seleção',
   },
   Modal: {
     okText: 'OK',
@@ -29,12 +26,17 @@ export default {
     cancelText: 'Cancelar',
   },
   Transfer: {
-    notFoundContent: 'Não encontrado',
     searchPlaceholder: 'Procurar',
     itemUnit: 'item',
     itemsUnit: 'items',
   },
-  Select: {
-    notFoundContent: 'Não encontrado',
+  Upload: {
+    uploading: 'Enviando...',
+    removeFile: 'Remover arquivo',
+    uploadError: 'Erro no envio',
+    previewFile: 'Visualizar arquivo',
+  },
+  Empty: {
+    description: 'Não há dados',
   },
 };

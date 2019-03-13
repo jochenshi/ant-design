@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount, render } from 'enzyme';
-import { renderToJson } from 'enzyme-to-json';
 import Breadcrumb from '../index';
 
 describe('Breadcrumb', () => {
@@ -14,16 +13,17 @@ describe('Breadcrumb', () => {
     errorSpy.mockRestore();
   });
 
+  // https://github.com/airbnb/enzyme/issues/875
   it('warns on non-Breadcrumb.Item children', () => {
     const MyCom = () => <div>foo</div>;
     mount(
       <Breadcrumb>
         <MyCom />
-      </Breadcrumb>
+      </Breadcrumb>,
     );
     expect(errorSpy.mock.calls).toHaveLength(1);
     expect(errorSpy.mock.calls[0][0]).toMatch(
-      'Breadcrumb only accepts Breadcrumb.Item as it\'s children'
+      "Warning: [antd: Breadcrumb] Only accepts Breadcrumb.Item as it's children",
     );
   });
 
@@ -34,10 +34,10 @@ describe('Breadcrumb', () => {
         {null}
         <Breadcrumb.Item>Home</Breadcrumb.Item>
         {undefined}
-      </Breadcrumb>
+      </Breadcrumb>,
     );
     expect(errorSpy).not.toHaveBeenCalled();
-    expect(renderToJson(wrapper)).toMatchSnapshot();
+    expect(wrapper).toMatchSnapshot();
   });
 
   // https://github.com/ant-design/ant-design/issues/5542
@@ -47,8 +47,8 @@ describe('Breadcrumb', () => {
         <Breadcrumb.Item />
         <Breadcrumb.Item>xxx</Breadcrumb.Item>
         <Breadcrumb.Item>yyy</Breadcrumb.Item>
-      </Breadcrumb>
+      </Breadcrumb>,
     );
-    expect(renderToJson(wrapper)).toMatchSnapshot();
+    expect(wrapper).toMatchSnapshot();
   });
 });

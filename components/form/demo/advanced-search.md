@@ -19,13 +19,38 @@ Because the width of label is not fixed, you may need to adjust it by customizin
 
 
 ````jsx
-import { Form, Row, Col, Input, Button, Icon } from 'antd';
-const FormItem = Form.Item;
+import {
+  Form, Row, Col, Input, Button, Icon,
+} from 'antd';
 
 class AdvancedSearchForm extends React.Component {
   state = {
     expand: false,
   };
+
+  // To generate mock Form.Item
+  getFields() {
+    const count = this.state.expand ? 10 : 6;
+    const { getFieldDecorator } = this.props.form;
+    const children = [];
+    for (let i = 0; i < 10; i++) {
+      children.push(
+        <Col span={8} key={i} style={{ display: i < count ? 'block' : 'none' }}>
+          <Form.Item label={`Field ${i}`}>
+            {getFieldDecorator(`field-${i}`, {
+              rules: [{
+                required: true,
+                message: 'Input something!',
+              }],
+            })(
+              <Input placeholder="placeholder" />
+            )}
+          </Form.Item>
+        </Col>
+      );
+    }
+    return children;
+  }
 
   handleSearch = (e) => {
     e.preventDefault();
@@ -44,36 +69,12 @@ class AdvancedSearchForm extends React.Component {
   }
 
   render() {
-    const { getFieldDecorator } = this.props.form;
-    const formItemLayout = {
-      labelCol: { span: 5 },
-      wrapperCol: { span: 19 },
-    };
-
-    // To generate mock Form.Item
-    const children = [];
-    for (let i = 0; i < 10; i++) {
-      children.push(
-        <Col span={8} key={i}>
-          <FormItem {...formItemLayout} label={`Field ${i}`}>
-            {getFieldDecorator(`field-${i}`)(
-              <Input placeholder="placeholder" />
-            )}
-          </FormItem>
-        </Col>
-      );
-    }
-
-    const expand = this.state.expand;
-    const shownCount = expand ? children.length : 6;
     return (
       <Form
         className="ant-advanced-search-form"
         onSubmit={this.handleSearch}
       >
-        <Row gutter={40}>
-          {children.slice(0, shownCount)}
-        </Row>
+        <Row gutter={24}>{this.getFields()}</Row>
         <Row>
           <Col span={24} style={{ textAlign: 'right' }}>
             <Button type="primary" htmlType="submit">Search</Button>
@@ -81,7 +82,7 @@ class AdvancedSearchForm extends React.Component {
               Clear
             </Button>
             <a style={{ marginLeft: 8, fontSize: 12 }} onClick={this.toggle}>
-              Collapse <Icon type={expand ? 'up' : 'down'} />
+              Collapse <Icon type={this.state.expand ? 'up' : 'down'} />
             </a>
           </Col>
         </Row>
@@ -90,7 +91,7 @@ class AdvancedSearchForm extends React.Component {
   }
 }
 
-const WrappedAdvancedSearchForm = Form.create()(AdvancedSearchForm);
+const WrappedAdvancedSearchForm = Form.create({ name: 'advanced_search' })(AdvancedSearchForm);
 ReactDOM.render(
   <div>
     <WrappedAdvancedSearchForm />
@@ -101,11 +102,19 @@ ReactDOM.render(
 ````
 
 ````css
-#components-form-demo-advanced-search .ant-advanced-search-form {
+.ant-advanced-search-form {
   padding: 24px;
   background: #fbfbfb;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
+}
+
+.ant-advanced-search-form .ant-form-item {
+  display: flex;
+}
+
+.ant-advanced-search-form .ant-form-item-control-wrapper {
+  flex: 1;
 }
 ````
 

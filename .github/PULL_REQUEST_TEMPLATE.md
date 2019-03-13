@@ -1,9 +1,46 @@
-First of all, thanks for your contribution! :-)
+First of all, thank you for your contribution! 😄
 
-Please makes sure these boxes are checked before submitting your PR, thank you!
+New feature please send pull request to feature branch, and rest to master branch.
+Pull request will be merged after one of collaborators approve.
+Please makes sure that these form are filled before submitting your pull request, thank you!
 
-* [ ] Make sure you propose PR to correct branch: bugfix for `master`, feature for latest active branch `feature-x.x`.
-* [ ] Make sure you follow antd's [code convention](https://github.com/ant-design/ant-design/wiki/Code-convention-for-antd).
-* [ ] Run `npm run lint` and fix those errors before submitting in order to keep consistent code style.
-* [ ] Rebase before creating a PR to keep commit history clear.
-* [ ] Add some descriptions and refer relative issues for you PR.
+[[中文版模板 / Chinese template](https://github.com/ant-design/ant-design/blob/master/.github/PULL_REQUEST_TEMPLATE/pr_cn.md)]
+
+### 🤔 This is a ...
+
+- [ ] New feature
+- [ ] Bug fix
+- [ ] Site / document update
+- [ ] Component style update
+- [ ] TypeScript definition update
+- [ ] Refactoring
+- [ ] Code style optimization
+- [ ] Branch merge
+- [ ] Other (about what?)
+
+### 👻 What's the background?
+
+1. Describe the source of requirement, like related issue link.
+
+2. Describe the problem and the scenario.
+
+### 💡 Solution
+
+1. How to fix the problem, and list final API implementation and usage sample if that is an new feature.
+
+2. GIF or snapshot should be provided if includes UI/interactive modification.
+
+### 📝 Changelog description
+
+> Describe changes from userside, and list all potential break changes or other risks.
+
+1. English description
+
+2. Chinese description (optional)
+
+### ☑️ Self Check before Merge
+
+- [ ] Doc is updated/provided or not needed
+- [ ] Demo is updated/provided or not needed
+- [ ] TypeScript definition is updated/provided or not needed
+- [ ] Changelog is provided or not needed

@@ -14,7 +14,10 @@ title:
 The count will be animated as it changes.
 
 ````jsx
-import { Badge, Button, Icon, Switch } from 'antd';
+import {
+  Badge, Button, Icon, Switch,
+} from 'antd';
+
 const ButtonGroup = Button.Group;
 
 class Demo extends React.Component {
@@ -60,7 +63,7 @@ class Demo extends React.Component {
           <Badge dot={this.state.show}>
             <a href="#" className="head-example" />
           </Badge>
-          <Switch onChange={this.onChange} />
+          <Switch onChange={this.onChange} checked={this.state.show} />
         </div>
       </div>
     );

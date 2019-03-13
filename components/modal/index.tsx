@@ -1,51 +1,67 @@
-import Modal, { ModalFuncProps } from './Modal';
+import * as React from 'react';
+import Modal, { ModalFuncProps, destroyFns } from './Modal';
 import confirm from './confirm';
-import assign from 'object-assign';
+import Icon from '../icon';
 
-export { ModalFuncProps }
+export { ActionButtonProps } from './ActionButton';
+export { ModalProps, ModalFuncProps } from './Modal';
 
-Modal.info = function (props: ModalFuncProps) {
-  const config = assign({}, {
+Modal.info = function(props: ModalFuncProps) {
+  const config = {
     type: 'info',
-    iconType: 'info-circle',
+    icon: <Icon type="info-circle" />,
     okCancel: false,
-  }, props);
+    ...props,
+  };
   return confirm(config);
 };
 
-Modal.success = function (props: ModalFuncProps) {
-  const config = assign({}, {
+Modal.success = function(props: ModalFuncProps) {
+  const config = {
     type: 'success',
-    iconType: 'check-circle',
+    icon: <Icon type="check-circle" />,
     okCancel: false,
-  }, props);
+    ...props,
+  };
   return confirm(config);
 };
 
-Modal.error = function (props: ModalFuncProps) {
-  const config = assign({}, {
+Modal.error = function(props: ModalFuncProps) {
+  const config = {
     type: 'error',
-    iconType: 'cross-circle',
+    icon: <Icon type="close-circle" />,
     okCancel: false,
-  }, props);
+    ...props,
+  };
   return confirm(config);
 };
 
-Modal.warning = Modal.warn = function (props: ModalFuncProps) {
-  const config = assign({}, {
+Modal.warning = Modal.warn = function(props: ModalFuncProps) {
+  const config = {
     type: 'warning',
-    iconType: 'exclamation-circle',
+    icon: <Icon type="exclamation-circle" />,
     okCancel: false,
-  }, props);
+    ...props,
+  };
   return confirm(config);
 };
 
-Modal.confirm = function (props: ModalFuncProps) {
-  const config = assign({}, {
+Modal.confirm = function(props: ModalFuncProps) {
+  const config = {
     type: 'confirm',
     okCancel: true,
-  }, props);
+    ...props,
+  };
   return confirm(config);
+};
+
+Modal.destroyAll = function() {
+  while (destroyFns.length) {
+    const close = destroyFns.pop();
+    if (close) {
+      close();
+    }
+  }
 };
 
 export default Modal;
